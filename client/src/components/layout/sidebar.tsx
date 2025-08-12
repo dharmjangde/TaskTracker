@@ -76,7 +76,7 @@ export default function Sidebar({ isOpen, onClose, onOpenAddTask, onOpenAddExpen
               return (
                 <li key={item.href}>
                   <Link href={item.href}>
-                    <a 
+                    <div 
                       className={cn(
                         "nav-item",
                         isActive && "active"
@@ -86,7 +86,7 @@ export default function Sidebar({ isOpen, onClose, onOpenAddTask, onOpenAddExpen
                     >
                       <Icon className="w-5 h-5" />
                       <span>{item.label}</span>
-                    </a>
+                    </div>
                   </Link>
                 </li>
               );

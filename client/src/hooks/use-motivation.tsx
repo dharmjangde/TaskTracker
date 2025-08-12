@@ -31,15 +31,15 @@ export function useMotivation() {
       }
     };
 
-    // Initial delay of 2 minutes, then check every minute
-    const initialTimeout = setTimeout(checkMotivation, 2 * 60 * 1000);
+    // Initial delay of 30 seconds for demo, then check every minute
+    const initialTimeout = setTimeout(checkMotivation, 30 * 1000);
     const intervalId = setInterval(checkMotivation, 60 * 1000);
 
     return () => {
       clearTimeout(initialTimeout);
       clearInterval(intervalId);
     };
-  }, [motivationState.interval, motivationState.lastShown]);
+  }, [motivationState.interval]);
 
   const closeMotivation = () => {
     setMotivationState(prev => ({

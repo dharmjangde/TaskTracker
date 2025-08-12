@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import StudyProgressChart from "@/components/charts/study-progress-chart";
 import ExpenseChart from "@/components/charts/expense-chart";
+import TaskCompletionChart from "@/components/charts/task-completion-chart";
+import WeeklyOverviewChart from "@/components/charts/weekly-overview-chart";
 import { 
   CheckSquare, 
   Book, 
@@ -147,11 +149,14 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Charts Row */}
+      {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="chart-container">
           <CardHeader>
-            <CardTitle>Weekly Study Progress</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              Weekly Study Progress
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <StudyProgressChart />
@@ -160,10 +165,40 @@ export default function Dashboard() {
 
         <Card className="chart-container">
           <CardHeader>
-            <CardTitle>Expense Categories</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              Expense Categories
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ExpenseChart />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Row 2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="chart-container">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              Task Completion Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TaskCompletionChart />
+          </CardContent>
+        </Card>
+
+        <Card className="chart-container">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              Weekly Activity Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <WeeklyOverviewChart />
           </CardContent>
         </Card>
       </div>
