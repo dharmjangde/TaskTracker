@@ -1,0 +1,633 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Productivity Tracker - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-inter">
+    
+    <!-- @COMPONENT: MotivationalPopup -->
+    <div id="motivationalPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 transform transition-all duration-300 scale-95">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gradient-to-r from-emerald-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-star text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2" data-bind="motivationalMessage.title">Great Progress!</h3>
+                <p class="text-gray-600 mb-6" data-bind="motivationalMessage.content">You've completed 5 tasks today. Keep up the amazing work!</p>
+                <button onclick="closeMotivationalPopup()" class="bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-blue-600 transition-all duration-200">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MotivationalPopup -->
+
+    <!-- @COMPONENT: AchievementNotification -->
+    <div id="achievementNotification" class="fixed top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-40">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-trophy text-xl"></i>
+            <div>
+                <p class="font-semibold">Achievement Unlocked!</p>
+                <p class="text-sm" data-bind="achievement.name">Study Streak Champion</p>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AchievementNotification -->
+
+    <div class="min-h-screen flex">
+        <!-- @COMPONENT: Sidebar -->
+        <div class="bg-white shadow-lg w-64 min-h-screen flex flex-col">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">ProductiveMe</h1>
+                        <p class="text-sm text-gray-500">Personal Tracker</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#dashboard" class="flex items-center space-x-3 px-4 py-3 text-blue-600 bg-blue-50 rounded-lg">
+                    <i class="fas fa-home w-5"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#expenses" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-wallet w-5"></i>
+                    <span>Expenses</span>
+                </a>
+                <a href="#study" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-book w-5"></i>
+                    <span>Study Tracker</span>
+                </a>
+                <a href="#tasks" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-tasks w-5"></i>
+                    <span>Tasks</span>
+                </a>
+                <a href="#reports" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#achievements" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-trophy w-5"></i>
+                    <span>Achievements</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">Daily Progress</span>
+                        <span class="text-sm font-bold text-emerald-600" data-bind="dailyProgress.percentage">78%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-emerald-400 to-blue-500 h-2 rounded-full transition-all duration-300" style="width: 78%" data-bind="dailyProgress.width"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- @COMPONENT: Header -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+                        <p class="text-gray-600" data-bind="currentDate">Today, December 14, 2023</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2 bg-emerald-50 px-4 py-2 rounded-lg">
+                            <i class="fas fa-fire text-emerald-500"></i>
+                            <span class="text-emerald-700 font-semibold" data-bind="studyStreak.days">7 Day Streak!</span>
+                        </div>
+                        <button data-event="click:handleQuickAdd" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Quick Add</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <main class="p-6">
+                <!-- @COMPONENT: StatsCards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Today's Tasks</p>
+                                <p class="text-2xl font-bold text-gray-800" data-bind="todayStats.tasks">8/12</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-check-circle text-blue-500 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 67%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Study Hours</p>
+                                <p class="text-2xl font-bold text-gray-800" data-bind="todayStats.studyHours">4.5h</p>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-clock text-emerald-500 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-sm text-emerald-600">+1.5h from yesterday</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Expenses Today</p>
+                                <p class="text-2xl font-bold text-gray-800" data-bind="todayStats.expenses">$45.20</p>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-amber-500 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-500">3 transactions</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Weekly Score</p>
+                                <p class="text-2xl font-bold text-gray-800" data-bind="weeklyScore">94%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-trophy text-purple-500 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-sm text-purple-600">Excellent performance!</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: StatsCards -->
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- @COMPONENT: TodaysTasks -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                            <div class="p-6 border-b border-gray-100">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-800">Today's Tasks</h3>
+                                    <button data-event="click:handleAddTask" class="text-blue-500 hover:text-blue-600 flex items-center space-x-1">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Add Task</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 space-y-4">
+                                <!-- @MAP: tasks.map(task => ( -->
+                                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors" data-mock="true">
+                                    <div class="flex-shrink-0">
+                                        <input type="checkbox" class="w-5 h-5 text-blue-500 rounded focus:ring-blue-500" data-event="change:handleTaskToggle">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800" data-bind="task.title">Complete React component refactoring</h4>
+                                        <p class="text-sm text-gray-500" data-bind="task.timeEstimate">Estimated: 2 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full" data-bind="task.category">Development</span>
+                                        <button data-event="click:handleTaskOptions" class="text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200" data-mock="true">
+                                    <div class="flex-shrink-0">
+                                        <input type="checkbox" checked class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500" data-event="change:handleTaskToggle">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800 line-through" data-bind="task.title">Review expense reports</h4>
+                                        <p class="text-sm text-emerald-600" data-bind="task.completedTime">Completed 1 hour ago</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 bg-emerald-100 text-emerald-600 text-xs rounded-full" data-bind="task.category">Finance</span>
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors" data-mock="true">
+                                    <div class="flex-shrink-0">
+                                        <input type="checkbox" class="w-5 h-5 text-blue-500 rounded focus:ring-blue-500" data-event="change:handleTaskToggle">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800" data-bind="task.title">Study JavaScript algorithms</h4>
+                                        <p class="text-sm text-gray-500" data-bind="task.timeEstimate">Estimated: 1.5 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full" data-bind="task.category">Study</span>
+                                        <button data-event="click:handleTaskOptions" class="text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-4 p-4 bg-amber-50 rounded-lg border border-amber-200" data-mock="true">
+                                    <div class="flex-shrink-0">
+                                        <input type="checkbox" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500" data-event="change:handleTaskToggle">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800" data-bind="task.title">Update monthly budget</h4>
+                                        <p class="text-sm text-amber-600" data-bind="task.dueTime">Due in 30 minutes</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 bg-amber-100 text-amber-600 text-xs rounded-full" data-bind="task.category">Finance</span>
+                                        <i class="fas fa-clock text-amber-500"></i>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: TodaysTasks -->
+
+                    <!-- @COMPONENT: QuickActions -->
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white">
+                            <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button data-event="click:handleQuickExpense" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 p-3 rounded-lg text-left transition-colors flex items-center space-x-3">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Add Expense</span>
+                                </button>
+                                <button data-event="click:handleStartStudySession" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 p-3 rounded-lg text-left transition-colors flex items-center space-x-3">
+                                    <i class="fas fa-play"></i>
+                                    <span>Start Study Session</span>
+                                </button>
+                                <button data-event="click:handleCreateTask" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 p-3 rounded-lg text-left transition-colors flex items-center space-x-3">
+                                    <i class="fas fa-tasks"></i>
+                                    <span>Create Task</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                            <div class="p-6 border-b border-gray-100">
+                                <h3 class="text-lg font-semibold text-gray-800">Weekly Progress</h3>
+                            </div>
+                            <div class="p-6">
+                                <canvas id="weeklyProgressChart" width="300" height="200"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                            <div class="p-6 border-b border-gray-100">
+                                <h3 class="text-lg font-semibold text-gray-800">Recent Achievements</h3>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <!-- @MAP: achievements.map(achievement => ( -->
+                                <div class="flex items-center space-x-3" data-mock="true">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-medal text-yellow-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800" data-bind="achievement.title">Task Master</h4>
+                                        <p class="text-sm text-gray-500" data-bind="achievement.description">Completed 50 tasks</p>
+                                    </div>
+                                    <div class="text-xs text-gray-400" data-bind="achievement.date">2d ago</div>
+                                </div>
+
+                                <div class="flex items-center space-x-3" data-mock="true">
+                                    <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-fire text-emerald-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800" data-bind="achievement.title">Study Streak</h4>
+                                        <p class="text-sm text-gray-500" data-bind="achievement.description">7 days in a row</p>
+                                    </div>
+                                    <div class="text-xs text-gray-400" data-bind="achievement.date">Today</div>
+                                </div>
+
+                                <div class="flex items-center space-x-3" data-mock="true">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-star text-blue-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800" data-bind="achievement.title">Budget Keeper</h4>
+                                        <p class="text-sm text-gray-500" data-bind="achievement.description">Under budget this week</p>
+                                    </div>
+                                    <div class="text-xs text-gray-400" data-bind="achievement.date">1w ago</div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: QuickActions -->
+                </div>
+
+                <!-- @COMPONENT: RecentActivity -->
+                <div class="mt-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
+                                <button data-event="click:handleViewAllActivity" class="text-blue-500 hover:text-blue-600 text-sm">View All</button>
+                            </div>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            <!-- @MAP: recentActivity.map(activity => ( -->
+                            <div class="p-6 flex items-center space-x-4" data-mock="true">
+                                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-emerald-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-gray-800" data-bind="activity.description">Completed task "Review expense reports"</p>
+                                    <p class="text-sm text-gray-500" data-bind="activity.timestamp">1 hour ago</p>
+                                </div>
+                                <div class="text-emerald-600 font-medium" data-bind="activity.points">+10 pts</div>
+                            </div>
+
+                            <div class="p-6 flex items-center space-x-4" data-mock="true">
+                                <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-amber-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-gray-800" data-bind="activity.description">Added expense "Lunch at cafe" - $12.50</p>
+                                    <p class="text-sm text-gray-500" data-bind="activity.timestamp">2 hours ago</p>
+                                </div>
+                                <div class="text-amber-600 font-medium" data-bind="activity.category">Food</div>
+                            </div>
+
+                            <div class="p-6 flex items-center space-x-4" data-mock="true">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-book text-purple-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-gray-800" data-bind="activity.description">Completed 45-minute study session on React Hooks</p>
+                                    <p class="text-sm text-gray-500" data-bind="activity.timestamp">3 hours ago</p>
+                                </div>
+                                <div class="text-purple-600 font-medium" data-bind="activity.points">+15 pts</div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: RecentActivity -->
+
+                <!-- @COMPONENT: MotivationalQuote -->
+                <div class="mt-8">
+                    <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl p-8 text-white text-center">
+                        <i class="fas fa-quote-left text-2xl mb-4 opacity-75"></i>
+                        <blockquote class="text-xl font-medium mb-4" data-bind="dailyQuote.text">
+                            "Success is the sum of small efforts repeated day in and day out."
+                        </blockquote>
+                        <cite class="text-sm opacity-75" data-bind="dailyQuote.author">- Robert Collier</cite>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: MotivationalQuote -->
+            </main>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <!-- @COMPONENT: TaskCreationModal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">Create New Task</h3>
+                <button onclick="closeTaskModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form data-event="submit:handleCreateTask">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Task Title</label>
+                        <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter task title" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="study">Study</option>
+                            <option value="finance">Finance</option>
+                            <option value="development">Development</option>
+                            <option value="personal">Personal</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Estimate (hours)</label>
+                        <input type="number" step="0.5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="2.0">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <div class="flex space-x-3">
+                            <label class="flex items-center">
+                                <input type="radio" name="priority" value="low" class="text-green-500 focus:ring-green-500">
+                                <span class="ml-2 text-sm text-gray-700">Low</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="priority" value="medium" class="text-yellow-500 focus:ring-yellow-500" checked>
+                                <span class="ml-2 text-sm text-gray-700">Medium</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="priority" value="high" class="text-red-500 focus:ring-red-500">
+                                <span class="ml-2 text-sm text-gray-700">High</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" onclick="closeTaskModal()" class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        Create Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: TaskCreationModal -->
+
+    <script>
+        // @STATE: Global application state
+        (function() {
+            // TODO: Replace with actual state management (Redux, Context API, etc.)
+            let appState = {
+                user: { name: "John Doe", streak: 7 },
+                tasks: [],
+                expenses: [],
+                studySessions: [],
+                achievements: []
+            };
+
+            // Initialize charts
+            function initializeCharts() {
+                const ctx = document.getElementById('weeklyProgressChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Completion Rate',
+                            data: [85, 92, 78, 96, 89, 94, 87],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Motivational popup system
+            function showMotivationalPopup() {
+                const popup = document.getElementById('motivationalPopup');
+                popup.classList.remove('hidden');
+                popup.querySelector('div').classList.add('scale-100');
+                
+                // TODO: Implement timer-based triggers and dynamic message selection
+            }
+
+            window.closeMotivationalPopup = function() {
+                const popup = document.getElementById('motivationalPopup');
+                popup.querySelector('div').classList.remove('scale-100');
+                setTimeout(() => {
+                    popup.classList.add('hidden');
+                }, 300);
+            }
+
+            // Achievement notification system
+            function showAchievementNotification(achievement) {
+                const notification = document.getElementById('achievementNotification');
+                notification.classList.remove('translate-x-full');
+                
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                }, 5000);
+                
+                // TODO: Implement achievement logic and progress tracking
+            }
+
+            // Task management
+            window.closeTaskModal = function() {
+                document.getElementById('taskModal').classList.add('hidden');
+            }
+
+            // Event handlers for buttons (to be implemented)
+            window.handleQuickAdd = function() {
+                document.getElementById('taskModal').classList.remove('hidden');
+                // TODO: Implement quick add functionality
+            }
+
+            window.handleAddTask = function() {
+                document.getElementById('taskModal').classList.remove('hidden');
+                // TODO: Implement task creation
+            }
+
+            window.handleTaskToggle = function(event) {
+                // TODO: Implement task completion logic
+                if (event.target.checked) {
+                    // Simulate achievement unlock
+                    setTimeout(() => showAchievementNotification({ name: "Task Completed!" }), 500);
+                }
+            }
+
+            window.handleStartStudySession = function() {
+                // TODO: Implement study session timer
+                console.log('Starting study session...');
+            }
+
+            window.handleQuickExpense = function() {
+                // TODO: Implement expense addition modal
+                console.log('Adding expense...');
+            }
+
+            window.handleCreateTask = function() {
+                document.getElementById('taskModal').classList.remove('hidden');
+            }
+
+            // Initialize app
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeCharts();
+                
+                // Show welcome popup after 3 seconds
+                setTimeout(() => {
+                    showMotivationalPopup();
+                }, 3000);
+                
+                // TODO: Load data from Google Sheets API
+                // TODO: Set up real-time sync
+                // TODO: Implement offline capability
+            });
+
+            // Responsive sidebar toggle for mobile
+            function setupMobileNavigation() {
+                // TODO: Add mobile navigation toggle
+                const sidebar = document.querySelector('.w-64');
+                // Implementation for mobile responsiveness
+            }
+
+        })();
+    </script>
+</body>
+</html>

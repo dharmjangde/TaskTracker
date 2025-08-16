@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Productivity Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#10b981', 
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        error: '#ef4444'
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 font-inter">
+    <!-- @COMPONENT: App [main application container] -->
+    <div class="min-h-screen flex">
+        
+        <!-- @COMPONENT: Sidebar [navigation and user info] -->
+        <aside class="bg-white shadow-lg w-64 min-h-screen fixed left-0 top-0 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300" id="sidebar">
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-slate-800" data-bind="app.name">ProductivityHub</h1>
+                        <p class="text-sm text-slate-600" data-bind="user.name" data-mock="true">John Doe</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#dashboard" class="nav-item active flex items-center space-x-3 px-4 py-3 rounded-lg bg-primary text-white" data-event="click:setActiveView">
+                            <i class="fas fa-home w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#expenses" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" data-event="click:setActiveView">
+                            <i class="fas fa-wallet w-5"></i>
+                            <span>Expenses</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#study" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" data-event="click:setActiveView">
+                            <i class="fas fa-book w-5"></i>
+                            <span>Study Tracker</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#tasks" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" data-event="click:setActiveView">
+                            <i class="fas fa-tasks w-5"></i>
+                            <span>Task Manager</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#reports" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" data-event="click:setActiveView">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-8 p-4 bg-gradient-to-r from-primary to-secondary rounded-lg text-white">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-fire text-accent"></i>
+                        <span class="font-medium">Current Streak</span>
+                    </div>
+                    <p class="text-2xl font-bold" data-bind="user.streak" data-mock="true">7 days</p>
+                    <p class="text-sm opacity-90">Keep it up!</p>
+                </div>
+            </nav>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [primary content area] -->
+        <main class="flex-1 lg:ml-64">
+            <!-- @COMPONENT: TopBar [header with mobile menu and notifications] -->
+            <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-20">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center space-x-4">
+                        <button class="lg:hidden text-slate-600 hover:text-slate-800" id="mobile-menu-btn" data-event="click:toggleSidebar">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h2 class="text-xl font-semibold text-slate-800" id="page-title">Dashboard</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button class="relative p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" data-event="click:showNotifications">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center" data-bind="notifications.count" data-mock="true">3</span>
+                        </button>
+                        
+                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                            <span class="text-white font-medium text-sm" data-bind="user.initials" data-mock="true">JD</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopBar -->
+
+            <!-- @COMPONENT: DashboardView [main dashboard content] -->
+            <div class="view-content p-6" id="dashboard-view">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-600 text-sm font-medium">Today's Tasks</p>
+                                <p class="text-2xl font-bold text-slate-800" data-bind="stats.todayTasks" data-mock="true">8/12</p>
+                            </div>
+                            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tasks text-primary text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-slate-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 67%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-600 text-sm font-medium">Study Hours</p>
+                                <p class="text-2xl font-bold text-slate-800" data-bind="stats.studyHours" data-mock="true">4.5h</p>
+                            </div>
+                            <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-book text-secondary text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-secondary mt-2">
+                            <i class="fas fa-arrow-up"></i> +1.2h from yesterday
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-600 text-sm font-medium">Monthly Expenses</p>
+                                <p class="text-2xl font-bold text-slate-800" data-bind="stats.expenses" data-mock="true">$1,234</p>
+                            </div>
+                            <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-wallet text-accent text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-error mt-2">
+                            <i class="fas fa-arrow-up"></i> +$123 from last month
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-600 text-sm font-medium">Productivity Score</p>
+                                <p class="text-2xl font-bold text-slate-800" data-bind="stats.productivityScore" data-mock="true">87%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-success text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-success mt-2">
+                            <i class="fas fa-arrow-up"></i> +5% from last week
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Weekly Study Progress</h3>
+                        <canvas id="study-chart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Expense Categories</h3>
+                        <canvas id="expense-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity & Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Recent Activity</h3>
+                        <div class="space-y-4">
+                            <!-- @MAP: recentActivities.map(activity => ( -->
+                            <div class="flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-50" data-mock="true">
+                                <div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check text-secondary"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-slate-800">Completed "React Hooks Study"</p>
+                                    <p class="text-sm text-slate-600">2 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-50" data-mock="true">
+                                <div class="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-accent"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-slate-800">Added expense: Groceries ($45)</p>
+                                    <p class="text-sm text-slate-600">4 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-50" data-mock="true">
+                                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-plus text-primary"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-slate-800">Created task: "Review JavaScript concepts"</p>
+                                    <p class="text-sm text-slate-600">6 hours ago</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button class="w-full flex items-center space-x-3 p-3 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors" data-event="click:quickAddTask">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Task</span>
+                            </button>
+                            <button class="w-full flex items-center space-x-3 p-3 rounded-lg bg-secondary text-white hover:bg-secondary/90 transition-colors" data-event="click:startStudySession">
+                                <i class="fas fa-play"></i>
+                                <span>Start Study</span>
+                            </button>
+                            <button class="w-full flex items-center space-x-3 p-3 rounded-lg bg-accent text-white hover:bg-accent/90 transition-colors" data-event="click:addExpense">
+                                <i class="fas fa-receipt"></i>
+                                <span>Add Expense</span>
+                            </button>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <i class="fas fa-trophy text-yellow-300"></i>
+                                <span class="font-medium">Achievement</span>
+                            </div>
+                            <p class="text-sm">Study Streak Master!</p>
+                            <p class="text-xs opacity-90">7 days of consistent studying</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: DashboardView -->
+
+            <!-- @COMPONENT: ExpenseView [expense tracking interface] -->
+            <div class="view-content p-6 hidden" id="expenses-view">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Expense Tracker</h2>
+                    <button class="mt-4 sm:mt-0 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors" data-event="click:openAddExpenseModal">
+                        <i class="fas fa-plus mr-2"></i>Add Expense
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Monthly Budget</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Total Budget</span>
+                                <span class="font-semibold" data-bind="budget.total" data-mock="true">$2,000</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Spent</span>
+                                <span class="font-semibold text-error" data-bind="budget.spent" data-mock="true">$1,234</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Remaining</span>
+                                <span class="font-semibold text-success" data-bind="budget.remaining" data-mock="true">$766</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-3">
+                                <div class="bg-gradient-to-r from-error to-warning h-3 rounded-full" style="width: 62%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Spending Trends</h3>
+                        <canvas id="spending-trend-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="p-6 border-b border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800">Recent Expenses</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <!-- @MAP: expenses.map(expense => ( -->
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">Dec 15, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">Grocery Shopping</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-secondary/10 text-secondary">Food</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">$45.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        <button class="text-primary hover:text-primary/80 mr-3" data-event="click:editExpense">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-error hover:text-error/80" data-event="click:deleteExpense">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">Dec 14, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">Gas Station</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-accent/10 text-accent">Transport</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">$32.50</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        <button class="text-primary hover:text-primary/80 mr-3">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-error hover:text-error/80">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ExpenseView -->
+
+            <!-- @COMPONENT: StudyView [study routine tracking] -->
+            <div class="view-content p-6 hidden" id="study-view">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Study Tracker</h2>
+                    <button class="mt-4 sm:mt-0 bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors" data-event="click:startStudySession">
+                        <i class="fas fa-play mr-2"></i>Start Session
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Today's Study Session</h3>
+                        <div class="text-center">
+                            <div class="w-32 h-32 mx-auto mb-4 relative">
+                                <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="75, 100"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-slate-800" data-bind="study.todayHours" data-mock="true">4.5h</div>
+                                        <div class="text-sm text-slate-600">of 6h goal</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="bg-secondary text-white px-6 py-2 rounded-lg hover:bg-secondary/90 transition-colors" data-event="click:pauseStudySession">
+                                <i class="fas fa-pause mr-2"></i>Pause Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Study Subjects</h3>
+                        <div class="space-y-3">
+                            <!-- @MAP: studySubjects.map(subject => ( -->
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-code text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-800">JavaScript</p>
+                                        <p class="text-sm text-slate-600">2.5h today</p>
+                                    </div>
+                                </div>
+                                <button class="text-primary hover:text-primary/80" data-event="click:startSubjectStudy">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-database text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-800">Database Design</p>
+                                        <p class="text-sm text-slate-600">1.2h today</p>
+                                    </div>
+                                </div>
+                                <button class="text-primary hover:text-primary/80">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Weekly Progress</h3>
+                    <canvas id="weekly-study-chart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: StudyView -->
+
+            <!-- @COMPONENT: TaskView [task management interface] -->
+            <div class="view-content p-6 hidden" id="tasks-view">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Task Manager</h2>
+                    <div class="flex space-x-3 mt-4 sm:mt-0">
+                        <button class="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors" data-event="click:generateDailyTasks">
+                            <i class="fas fa-magic mr-2"></i>Generate Daily Tasks
+                        </button>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors" data-event="click:openAddTaskModal">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- To Do Column -->
+                    <div class="bg-slate-100 rounded-xl p-4">
+                        <h3 class="font-semibold text-slate-800 mb-4 flex items-center">
+                            <div class="w-3 h-3 bg-slate-400 rounded-full mr-2"></div>
+                            To Do <span class="ml-auto bg-slate-200 text-slate-600 px-2 py-1 rounded-full text-xs" data-bind="tasks.todo.count" data-mock="true">4</span>
+                        </h3>
+                        <div class="space-y-3">
+                            <!-- @MAP: todoTasks.map(task => ( -->
+                            <div class="bg-white rounded-lg p-4 shadow-sm border border-slate-200" data-mock="true">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-medium text-slate-800">Review React Hooks</h4>
+                                    <button class="text-slate-400 hover:text-slate-600" data-event="click:openTaskMenu">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-3">Deep dive into useEffect and useContext</p>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">
+                                        <i class="fas fa-clock mr-1"></i>2h estimated
+                                    </span>
+                                    <span class="bg-accent/10 text-accent px-2 py-1 rounded-full text-xs">High Priority</span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 shadow-sm border border-slate-200" data-mock="true">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-medium text-slate-800">Update Portfolio</h4>
+                                    <button class="text-slate-400 hover:text-slate-600">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-3">Add new projects and update skills</p>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">
+                                        <i class="fas fa-clock mr-1"></i>3h estimated
+                                    </span>
+                                    <span class="bg-secondary/10 text-secondary px-2 py-1 rounded-full text-xs">Medium Priority</span>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- In Progress Column -->
+                    <div class="bg-blue-50 rounded-xl p-4">
+                        <h3 class="font-semibold text-slate-800 mb-4 flex items-center">
+                            <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                            In Progress <span class="ml-auto bg-primary/10 text-primary px-2 py-1 rounded-full text-xs" data-bind="tasks.progress.count" data-mock="true">2</span>
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-lg p-4 shadow-sm border border-slate-200" data-mock="true">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-medium text-slate-800">Build Todo App</h4>
+                                    <button class="text-slate-400 hover:text-slate-600">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-3">React + Vite frontend application</p>
+                                <div class="mb-3">
+                                    <div class="flex justify-between text-xs text-slate-600 mb-1">
+                                        <span>Progress</span>
+                                        <span>65%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                        <div class="bg-primary h-2 rounded-full" style="width: 65%"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">
+                                        <i class="fas fa-clock mr-1"></i>5h estimated
+                                    </span>
+                                    <span class="bg-error/10 text-error px-2 py-1 rounded-full text-xs">Due Today</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Done Column -->
+                    <div class="bg-green-50 rounded-xl p-4">
+                        <h3 class="font-semibold text-slate-800 mb-4 flex items-center">
+                            <div class="w-3 h-3 bg-success rounded-full mr-2"></div>
+                            Done <span class="ml-auto bg-success/10 text-success px-2 py-1 rounded-full text-xs" data-bind="tasks.done.count" data-mock="true">8</span>
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-lg p-4 shadow-sm border border-slate-200 opacity-75" data-mock="true">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-medium text-slate-800 line-through">Study JavaScript Basics</h4>
+                                    <div class="text-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-3">Variables, functions, and objects</p>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">
+                                        <i class="fas fa-calendar mr-1"></i>Completed today
+                                    </span>
+                                    <span class="bg-success/10 text-success px-2 py-1 rounded-full text-xs">Completed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: TaskView -->
+
+            <!-- @COMPONENT: ReportsView [analytics and reporting] -->
+            <div class="view-content p-6 hidden" id="reports-view">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Progress Reports</h2>
+                    <div class="flex space-x-3 mt-4 sm:mt-0">
+                        <select class="border border-slate-300 rounded-lg px-3 py-2 text-sm" data-event="change:updateReportPeriod">
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                            <option>Last 3 months</option>
+                        </select>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors" data-event="click:exportReport">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Task Completion Rate</h3>
+                        <canvas id="task-completion-chart" width="400" height="300"></canvas>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Study Time Distribution</h3>
+                        <canvas id="study-distribution-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Productivity Trends</h3>
+                    <canvas id="productivity-trends-chart" width="400" height="400"></canvas>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ReportsView -->
+
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+        
+    </div>
+    <!-- @END_COMPONENT: App -->
+
+    <!-- @COMPONENT: Modals [overlays and popups] -->
+    <!-- Achievement Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="achievement-modal">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
+            <div class="w-20 h-20 bg-gradient-to-r from-accent to-warning rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-trophy text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Achievement Unlocked!</h3>
+            <p class="text-slate-600 mb-4" data-bind="achievement.description" data-mock="true">You've completed 7 days of consistent studying!</p>
+            <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors" data-event="click:closeAchievementModal">
+                Awesome!
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="add-task-modal">
+        <div class="bg-white rounded-xl p-6 max-w-md mx-4 w-full">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Add New Task</h3>
+            <form class="space-y-4" data-event="submit:handleAddTask">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Task Title</label>
+                    <input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter task title" data-bind="task.title">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                    <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Task description" data-bind="task.description"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Priority</label>
+                        <select class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="task.priority">
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Estimated Time</label>
+                        <input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="2h" data-bind="task.estimatedTime">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors" data-event="click:closeAddTaskModal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                        Add Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Modals -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Navigation functionality
+            const navItems = document.querySelectorAll('.nav-item');
+            const viewContents = document.querySelectorAll('.view-content');
+            const pageTitle = document.getElementById('page-title');
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+
+            // Set active view
+            function setActiveView(targetView) {
+                // Update navigation
+                navItems.forEach(item => {
+                    item.classList.remove('active', 'bg-primary', 'text-white');
+                    item.classList.add('text-slate-600', 'hover:bg-slate-100');
+                });
+                
+                // Update views
+                viewContents.forEach(view => view.classList.add('hidden'));
+                
+                const activeNavItem = document.querySelector(`[href="#${targetView}"]`);
+                if (activeNavItem) {
+                    activeNavItem.classList.add('active', 'bg-primary', 'text-white');
+                    activeNavItem.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                }
+                
+                const activeView = document.getElementById(`${targetView}-view`);
+                if (activeView) {
+                    activeView.classList.remove('hidden');
+                }
+                
+                // Update page title
+                const titles = {
+                    'dashboard': 'Dashboard',
+                    'expenses': 'Expense Tracker',
+                    'study': 'Study Tracker',
+                    'tasks': 'Task Manager',
+                    'reports': 'Progress Reports'
+                };
+                pageTitle.textContent = titles[targetView] || 'Dashboard';
+            }
+
+            // Navigation event listeners
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetView = item.getAttribute('href').substring(1);
+                    setActiveView(targetView);
+                    
+                    // Hide sidebar on mobile after selection
+                    if (window.innerWidth < 1024) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 1024 && 
+                    !sidebar.contains(e.target) && 
+                    !mobileMenuBtn.contains(e.target)) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+
+            // Modal functionality
+            const achievementModal = document.getElementById('achievement-modal');
+            const addTaskModal = document.getElementById('add-task-modal');
+
+            // Show achievement modal (demo)
+            setTimeout(() => {
+                if (achievementModal) {
+                    achievementModal.classList.remove('hidden');
+                }
+            }, 3000);
+
+            // Close modals
+            document.addEventListener('click', (e) => {
+                if (e.target.hasAttribute('data-event')) {
+                    const event = e.target.getAttribute('data-event');
+                    if (event === 'click:closeAchievementModal') {
+                        achievementModal.classList.add('hidden');
+                    }
+                    if (event === 'click:openAddTaskModal') {
+                        addTaskModal.classList.remove('hidden');
+                    }
+                    if (event === 'click:closeAddTaskModal') {
+                        addTaskModal.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Initialize charts
+            function initializeCharts() {
+                // Study Progress Chart
+                const studyCtx = document.getElementById('study-chart');
+                if (studyCtx) {
+                    new Chart(studyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                            datasets: [{
+                                label: 'Study Hours',
+                                data: [2, 4, 3, 5, 4, 6, 4.5],
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+
+                // Expense Chart
+                const expenseCtx = document.getElementById('expense-chart');
+                if (expenseCtx) {
+                    new Chart(expenseCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Food', 'Transport', 'Entertainment', 'Shopping', 'Bills'],
+                            datasets: [{
+                                data: [400, 200, 150, 300, 184],
+                                backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom' } }
+                        }
+                    });
+                }
+
+                // Additional charts for other views
+                const spendingTrendCtx = document.getElementById('spending-trend-chart');
+                if (spendingTrendCtx) {
+                    new Chart(spendingTrendCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                            datasets: [{
+                                label: 'Weekly Spending',
+                                data: [320, 280, 410, 234],
+                                backgroundColor: '#f59e0b'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+
+                const weeklyStudyCtx = document.getElementById('weekly-study-chart');
+                if (weeklyStudyCtx) {
+                    new Chart(weeklyStudyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['JavaScript', 'React', 'Node.js', 'Database', 'CSS'],
+                            datasets: [{
+                                label: 'Hours This Week',
+                                data: [8, 6, 4, 3, 2],
+                                backgroundColor: '#2563eb'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+
+                const taskCompletionCtx = document.getElementById('task-completion-chart');
+                if (taskCompletionCtx) {
+                    new Chart(taskCompletionCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Completed', 'In Progress', 'Pending'],
+                            datasets: [{
+                                data: [65, 20, 15],
+                                backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+
+                const studyDistributionCtx = document.getElementById('study-distribution-chart');
+                if (studyDistributionCtx) {
+                    new Chart(studyDistributionCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Morning', 'Afternoon', 'Evening', 'Night'],
+                            datasets: [{
+                                data: [30, 25, 35, 10],
+                                backgroundColor: ['#06b6d4', '#10b981', '#f59e0b', '#8b5cf6']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+
+                const productivityTrendsCtx = document.getElementById('productivity-trends-chart');
+                if (productivityTrendsCtx) {
+                    new Chart(productivityTrendsCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Productivity Score',
+                                data: [75, 82, 78, 85, 87, 90],
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true, max: 100 }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Initialize on load
+            setTimeout(initializeCharts, 100);
+
+        })();
+    </script>
+</body>
+</html>
