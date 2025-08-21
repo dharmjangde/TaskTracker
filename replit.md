@@ -1,6 +1,6 @@
 # Overview
 
-This is a productivity application built with React (frontend) and Express.js (backend) that helps users manage their daily tasks, track study sessions, monitor expenses, and view progress reports. The application features a modern interface using shadcn/ui components and provides comprehensive tracking capabilities for personal productivity management.
+This is a frontend-only productivity application built with React and Vite that helps users manage their daily tasks, track study sessions, monitor expenses, and view progress reports. The application features a modern interface using shadcn/ui components and uses hardcoded mock data for demonstration purposes. This version is optimized for Vercel deployment and does not require any backend server.
 
 # User Preferences
 
